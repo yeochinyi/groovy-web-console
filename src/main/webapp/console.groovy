@@ -1,31 +1,28 @@
 import java.io.*
 
-def code = ""
+//def shell = application.shell ?: {application.shell = new GroovyShell();application.shell}
+
 def output
-def buffers
 
-if(params.code != null){
-        code = params.code
 
-        def writer = new StringWriter()
-        def shell = new GroovyShell()
-        shell.setProperty("out",writer)
-
-        try{
-                output = shell.evaluate(code)
-        }
-        catch(e){
-                e.printStackTrace(new PrintWriter(writer))
-        }
-
-        buffers =  writer.getBuffer().toString().split("\n")
+if (!session) {
+	session = request.getSession(true)
 }
+
+def baseDir = System.getProperty("user.home") + "/groovy_script/"
+
+new File(baseDir).mkdirs()
+
+def code = params.code ?: ""
+
+def file = params.file ?: "~"
+
 
 
 html.html{
-        head{
-                title("Groovy Web Console")
-println """
+	head{
+		title("Groovy Web Console")
+		println """
 
 <link rel="stylesheet" href="codemirror/codemirror.css">
 <link rel="stylesheet" href="codemirror/theme/blackboard.css">
@@ -43,16 +40,107 @@ println """
 <script src="codemirror/util/closetag.js"></script>
 
 <style>.CodeMirror {border-top: 1px solid #500; border-bottom: 1px solid #500;}</style>
-
+<script>
+</script>
 """
-        }
-        body{
-                h1 "Enter your Groovy code:"
-                form(method:"post"){
-                        textarea(id:"code", name:"code", rows:"40", cols:"80", "${code}")
-                        input(type:"submit")
-                }
-println """
+	}
+	
+	def reload = {
+		try{
+				code = new File(baseDir + file).getText()
+						session["file:" + file] = null
+						h2 "Loaded from file :" + file
+					}
+					catch(e){
+		h2 "Load Failed: "  + file + "->" + e
+	}}
+	body{
+		
+		switch(params.action){
+			case "clear":
+				session.invalidate()
+				session = request.getSession(true)
+				break
+				
+			case "reload":
+				reload.call()
+				break
+
+			case "changefile":
+				//Save prev buffer
+				def prevfile = session["prevfile"] ?: "~"
+				//Save in buffer if code is diff
+				def origtext
+				try{
+					origtext = new File(baseDir + prevfile).getText()
+				}catch(e){}
+				if(code != origtext){
+					session["file:" + prevfile] = code
+				}
+									
+				//Load from file if not in buffer	
+				if(!session["file:" + file]){
+					reload.call()			
+				}
+				else{
+					code = session["file:" + file]
+					h3 "Loaded from buffer :" + file
+				}
+				
+				session["prevfile"] = file
+				break
+				
+			case "save":
+				file = params.newfile.trim()
+				try{
+					new File(baseDir + file).write(code)
+					session["file:" + file] = null
+					h3 "Saved " + file
+				}
+				catch(e){
+					h3 "Save Failed:" + file  + e
+				}
+				session["prevfile"] = file
+				break
+				
+			case "run":
+			
+				def shell = new GroovyShell()
+				def writer = new StringWriter()
+				shell.out = writer
+
+				try{
+					output ="RET-> " + shell.evaluate(code) + "<BR>"
+					output ="OUT->" + writer.buffer
+				}
+				catch(e){
+					e.printStackTrace(new PrintWriter(writer))
+					output ="ERR->" + writer.buffer.replaceAll("\n", "<BR>")
+				}
+				break
+		}
+		
+		h5 "Base dir->" + baseDir
+					
+		form(method:"post"){
+			h2 "GWC Enter code:"
+			textarea(id:"code", name:"code", rows:"40", cols:"80", code)
+			select(name:"file",onchange:"forms[0].action.value='changefile';forms[0].submit()"){
+				option("~")
+				new File(baseDir).eachFile { 
+					//show * if in buffer
+					def mod = session["file:" + it.name] ? "*" : ""
+					println "<option ${it.name==file ?'selected':''} value=${it.name} >${it.name}${mod}</option>"
+				}
+			}			
+			input(type:"hidden", name:"newfile")
+			input(type:"hidden", name:"action")
+			input(type:"button", value:"run", onclick:"forms[0].action.value='run';forms[0].submit()")
+			input(type:"button", value:"save", onclick:"forms[0].newfile.value = prompt ('filename ?','${file}');if(forms[0].newfile.value) forms[0].action.value='save';forms[0].submit()")
+			input(type:"button", value:"reload", onclick:"forms[0].action.value='reload';forms[0].submit()")
+			input(type:"button", value:"clear", onclick:"forms[0].action.value='clear';forms[0].submit()")
+		}
+		println """
  <script>
       var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
         lineNumbers: true,
@@ -61,15 +149,18 @@ println """
       });
     </script>
 """
+		h2 "Output:"
+		println output?:""
+		
+		h5 "Versions: Java=" + System.properties["java.version"] + ", Groovy=" + GroovySystem.version
+
+	
+		//for(i in session.getAttributeNames())
+		//h5 i + "->" + session[i]
 
 
-                h1 "Output:"
-                if(output != null) p(output)
-                if(buffers != null)
-                buffers.each{
-                        p(it)
-                }
+		
 
-        }
+	}
 }
 

@@ -92,7 +92,7 @@
 									<outputDirectory>target/generated-webapp/codemirror</outputDirectory>
 									<includes>**/*</includes>
 								</artifactItem>
-								<artifactItem>
+								<!-- artifactItem>
 									<groupId>org.codehaus.groovy</groupId>
 									<artifactId>groovy</artifactId>
 									<version>2.0.5</version>
@@ -102,7 +102,7 @@
 									<outputDirectory>${project.build.directory}/${project.build.finalName}/apidocs</outputDirectory>
 									<outputDirectory>target/generated-webapp/apidocs</outputDirectory>
 									<includes>gapi/**/*,groovy-jdk/**/*</includes>
-								</artifactItem>
+								</artifactItem -->
 
 							</artifactItems>
 							<overWriteReleases>true</overWriteReleases>

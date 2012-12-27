@@ -128,8 +128,8 @@
             </SELECT --%>
 
 
-		<A href="apidocs/gapi/index.html" target="_blank">gapi</A> <A
-			href="apidocs/groovy-jdk/index.html" target="_blank">gjdk-api</A>
+		<A href="http://groovy.codehaus.org/api" target="_blank">gapi</A> <A
+			href="http://groovy.codehaus.org/groovy-jdk/" target="_blank">gjdk-api</A>
 
 		<h3><%= request.getAttribute("message") %></h3>
 

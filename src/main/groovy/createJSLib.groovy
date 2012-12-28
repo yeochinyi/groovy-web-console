@@ -1,6 +1,5 @@
 
-def f = new File('target/generated-webapp/include.inc')
-f.write ''
+def files = []
 new File('target/generated-webapp/codemirror').eachFileRecurse groovy.io.FileType.FILES, {
   def relativePath =  {i ->
       def index = i.path.indexOf('codemirror')
@@ -8,15 +7,41 @@ new File('target/generated-webapp/codemirror').eachFileRecurse groovy.io.FileTyp
     }
     
     switch(it.name){
+      
+      case ~'^.*run.*$':
+      case ~'^.*lint.js$':
+      case ~'^.*parse-js.js$':
+      case ~'^.*phantom.*$':
+      case ~'^.*test.*$': 
+        files << '<%-- Skipping ' + relativePath(it) + ' --%>\n'
+        break
+      
       case ~'^.*\\.js$':
-        f.append '<script src="' + relativePath(it) + '"></script>\n'
+        def text = '<script src="' + relativePath(it) + '"></script>\n'
+        if(it.name ==~ '^.*codemirror\\.js$'){         
+          files.add(0,text)
+        }
+        else
+          files << text
         break
 
       case ~'^.*\\.css$':
-        f.append '<link rel="stylesheet" href="' +  relativePath(it) + '">\n'
+        def text = '<link rel="stylesheet" href="' +  relativePath(it) + '"/>\n'
+        if(it.name ==~ '^.*codemirror\\.css$'){         
+          files.add(0,text)
+        }
+        else
+          files << text
         break
     }
  }
+
+def f = new File('target/generated-webapp/include.inc')
+f.write ''
+files.each{
+  f.append it
+}
+
 
 
  

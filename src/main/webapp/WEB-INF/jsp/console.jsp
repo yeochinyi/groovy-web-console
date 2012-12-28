@@ -1,6 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%-- @ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"--%>
 <HTML>
 <HEAD>
 <TITLE>Groovy Web Console</TITLE>
@@ -11,6 +11,18 @@
 .CodeMirror {
 	border-top: 1px solid #500;
 	border-bottom: 1px solid #500;
+	height: auto;
+}
+
+.CodeMirror-scroll {
+  height: auto;
+  overflow-y: hidden;
+  overflow-x: auto;
+}
+
+.CodeMirror-gutter {
+	width: 3em;
+	background: white;
 }
 
 .CodeMirror-fullscreen {
@@ -29,16 +41,6 @@
 	background-repeat: no-repeat;
 }
 
-.CodeMirror-gutter {
-	width: 3em;
-	background: white;
-}
-
-.CodeMirror-scroll {
-	height: auto;
-	overflow-y: hidden;
-	overflow-x: auto;
-}
 </style>
 <script src="jquery-1.8.2.js"></script>
 
@@ -62,24 +64,13 @@
       }
       cm.refresh();
     }
+    
     CodeMirror.connect(window, "resize", function() {
       var showing = document.body.getElementsByClassName("CodeMirror-fullscreen")[0];
       if (!showing) return;
       showing.CodeMirror.getScrollerElement().style.height = winHeight() + "px";
     });
- 
-      var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
-        lineNumbers: true,
-        matchBrackets: true,        
-        tabSize: 2,
-        indentUnit: 2,
-        mode: 'text/x-groovy',
-        extraKeys: {
-          'F11': function(cm) {setFullScreen(cm, !isFullScreen(cm));},
-          'Esc': function(cm) {if (isFullScreen(cm)) setFullScreen(cm, false);}
-        }
-      }
-      );
+    
    function getSelectedRange() {
         return { from: editor.getCursor(true), to: editor.getCursor(false) };
       }
@@ -94,24 +85,25 @@
         editor.commentRange(isComment, range.from, range.to);
       }            
       
-  var input = document.getElementById("select");
+  
   function selectTheme() {
-    var theme = input.options[input.selectedIndex].innerHTML;
+	var selecttheme = document.getElementById("selecttheme");
+    var theme = selecttheme.options[selecttheme.selectedIndex].innerHTML;
     editor.setOption("theme", theme);
   }
   var choice = document.location.search && document.location.search.slice(1);
   if (choice) {
-    input.value = choice;
+	  var selecttheme = document.getElementById("selecttheme");
+	  selecttheme.value = choice;
     editor.setOption("theme", choice);
-  }      
-            
+  }           
     </script>
 
 
 </HEAD>
 <BODY>
 	<FORM method="post">
-		<%--SELECT id="selecttheme" onchange="selectTheme()"> 			
+		Theme:<SELECT id="selecttheme" onchange="selectTheme()"> 			
 			<option>default</option>
 			<option>blackboard</option>
 			<option>cobalt</option>
@@ -125,7 +117,7 @@
 			<option>rubyblue</option>
 			<option>vibrant-ink</option>
 			<option>xq-dark</option>			
-            </SELECT --%>
+            </SELECT>
 
 
 		<A href="http://groovy.codehaus.org/api" target="_blank">gapi</A> <A
@@ -135,7 +127,8 @@
 
 		<h2>GWC Enter code:</h2>
 
-		<textarea id="code" name="code" rows="40" cols="80"><%= request.getAttribute("code") %></textarea>
+		<textarea id="code" name="code" ><%= request.getAttribute("code") %>
+		</textarea>
 
 		<select name="file"
 			onchange="forms[0].action.value='changefile';forms[0].submit()">
@@ -160,11 +153,18 @@
 
 
 		<script>
-      var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
-        lineNumbers: true,
-        matchBrackets: true,
-        mode: "text/x-groovy"
-      });
+	      var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+	          lineNumbers: true,
+	          matchBrackets: true,        
+	          tabSize: 2,
+	          indentUnit: 2,
+	          mode: 'text/x-groovy',
+	          extraKeys: {
+	            'F11': function(cm) {setFullScreen(cm, !isFullScreen(cm));},
+	            'Esc': function(cm) {if (isFullScreen(cm)) setFullScreen(cm, false);}
+	          }
+	        });
+		
     </script>
 
 		<h2>Output:</h2><%= request.getAttribute("output") %>

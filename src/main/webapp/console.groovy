@@ -1,5 +1,7 @@
 //def shell = application.shell ?: {application.shell = new GroovyShell();application.shell}
 
+
+
 def output
 
 if (!session) {
@@ -13,6 +15,8 @@ new File(baseDir).mkdirs()
 def code = params.code ?: ""
 
 def file = params.file ?: "~"
+
+def classpath
 
 def message 
 
@@ -75,7 +79,21 @@ switch(params.action){
 
   case "run":
 
-    def shell = new GroovyShell()
+    def config = new org.codehaus.groovy.control.CompilerConfiguration()
+    
+    classpath = config.classpath
+    
+    config.setClasspath(baseDir)
+    try{    
+      config.setScriptBaseClass('BaseScript')
+    }
+    catch(e){
+      e.printStackTrace(new PrintWriter(writer))
+    }
+    
+    def binding = new Binding(['self':file,'baseDir':baseDir])
+    
+    def shell = new GroovyShell(binding,config)
     def writer = new StringWriter()
     shell.out = writer
 
@@ -99,6 +117,13 @@ request.setAttribute('output',output?:'')
 request.setAttribute('message',message?:'')
 
 request.setAttribute('code',code?:'')
+
+request.setAttribute('info','Base dir->' + baseDir +
+  ', Java->' + System.getProperty("java.version") + 
+  //', Classpath->' + classpath +
+  ', Groovy->' + GroovySystem.version
+)
+
 
 new File(baseDir).eachFile {
   //show * if in buffer

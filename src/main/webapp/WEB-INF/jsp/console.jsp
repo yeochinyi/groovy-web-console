@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
+<%@ page import="java.util.*" %>	
 <%-- @ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"--%>
 <HTML>
 <HEAD>
@@ -101,7 +102,7 @@
 
 
 </HEAD>
-<BODY>
+<BODY><h4><%=    request.getAttribute("info") %></h4>
 	<FORM method="post">
 		Theme:<SELECT id="selecttheme" onchange="selectTheme()"> 			
 			<option>default</option>
@@ -127,14 +128,13 @@
 
 		<h2>GWC Enter code:</h2>
 
-		<textarea id="code" name="code" ><%= request.getAttribute("code") %>
-		</textarea>
+		<textarea id="code" name="code" ><%= request.getAttribute("code") %></textarea>
 
 		<select name="file"
 			onchange="forms[0].action.value='changefile';forms[0].submit()">
 			<option>~</option>
-			<% for(Object f : (java.util.ArrayList) request.getAttribute("files")){ 
-          java.util.ArrayList fileAttrs = (java.util.ArrayList) f;                          
+			<% for(Object f : (ArrayList) request.getAttribute("files")){ 
+          ArrayList fileAttrs = (ArrayList) f;                          
         	%>
 			<option <%= fileAttrs.get(0)  %> value="<%= fileAttrs.get(1) %>">
 				<%= fileAttrs.get(1) %><%= fileAttrs.get(2) %>
@@ -168,8 +168,8 @@
     </script>
 
 		<h2>Output:</h2><%= request.getAttribute("output") %>
-
-		<%-- Base dir=<%= baseDir %>, Java=<%= System.getProperties("java.version") %>", Groovy="<%= GroovySystem.version %>  --%>
+		
+				
 
 	</FORM>
 </BODY>

@@ -91,9 +91,11 @@ switch(params.action){
       e.printStackTrace(new PrintWriter(writer))
     }
     
-    def binding = new Binding(['self':file,'baseDir':baseDir])
+    def bindings = ['self':file,'baseDir':baseDir]  
     
-    def shell = new GroovyShell(binding,config)
+    bindings << ['bindings':bindings]    
+    
+    def shell = new GroovyShell(new Binding(bindings),config)
     def writer = new StringWriter()
     shell.out = writer
 

@@ -8,7 +8,8 @@ if (!session) {
   session = request.getSession(true)
 }
 
-def baseDir = System.getProperty("user.home") + "/groovy_script/"
+//def baseDir = System.getProperty("user.home") + "/groovy_script/"
+def baseDir = request.servletContext.getRealPath('/WEB-INF/groovy/') + '/'
 
 new File(baseDir).mkdirs()
 
